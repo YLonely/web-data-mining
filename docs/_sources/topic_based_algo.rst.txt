@@ -1,9 +1,0 @@
-topic\_based\_algo.py
-=========================
-
-.. automodule:: topic_based_algo
-    :members:
-    :special-members: __init__
-    :private-members:
-    :undoc-members:
-    :show-inheritance:

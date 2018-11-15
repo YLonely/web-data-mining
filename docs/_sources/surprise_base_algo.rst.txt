@@ -1,8 +1,0 @@
-surprise\_base\_algo.py
-===========================
-
-.. automodule:: surprise_base_algo
-    :members:
-    :private-members:
-    :undoc-members:
-    :show-inheritance:

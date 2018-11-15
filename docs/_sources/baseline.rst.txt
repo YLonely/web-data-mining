@@ -1,8 +1,0 @@
-baseline.py
-===============
-
-.. automodule:: baseline
-    :members:
-    :special-members:
-    :private-members:
-    :show-inheritance:

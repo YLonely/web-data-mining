@@ -1,8 +1,0 @@
-base\_algo.py
-=================
-
-.. automodule:: base_algo
-    :special-members: __init__
-    :members:
-    :undoc-members:
-    :show-inheritance:

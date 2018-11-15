@@ -1,9 +1,0 @@
-collaborate\_based\_algo.py
-===============================
-
-.. automodule:: collaborate_based_algo
-    :members:
-    :undoc-members:
-    :special-members: __init__
-    :private-members:
-    :show-inheritance:

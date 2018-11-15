@@ -1,6 +1,0 @@
-tf\_idf\_build.py
-================
-.. automodule:: tf_idf_build
-    :members:
-    :undoc-members:
-    :show-inheritance:
