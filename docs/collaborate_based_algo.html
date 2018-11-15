@@ -1,0 +1,128 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>collaborate_based_algo.py &#8212; WebDataMining  documentation</title>
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">WebDataMining  documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-collaborate_based_algo">
+<span id="collaborate-based-algo-py"></span><h1>collaborate_based_algo.py<a class="headerlink" href="#module-collaborate_based_algo" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="collaborate_based_algo.CollaborateBasedAlgo">
+<em class="property">class </em><code class="descclassname">collaborate_based_algo.</code><code class="descname">CollaborateBasedAlgo</code><span class="sig-paren">(</span><em>sim_func='cosine'</em>, <em>user_based=True</em>, <em>k=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/collaborate_based_algo.html#CollaborateBasedAlgo"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#collaborate_based_algo.CollaborateBasedAlgo" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Recommend.algo_set.surprise_base_algo.SurpriseBaseAlgo</span></code></p>
+<p>Collaborative filtering algorithm.</p>
+<dl class="method">
+<dt id="collaborate_based_algo.CollaborateBasedAlgo.__init__">
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>sim_func='cosine'</em>, <em>user_based=True</em>, <em>k=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/collaborate_based_algo.html#CollaborateBasedAlgo.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#collaborate_based_algo.CollaborateBasedAlgo.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>sim_func</strong> – similarity function: ‘cosine’,’msd’,’pearson’,’pearson_baseline’</li>
+<li><strong>user_based</strong> – True–&gt; user-user filtering strategy;False–&gt; item-item filtering strategy</li>
+<li><strong>k</strong> – The (max) number of neighbors to take into account for aggregation</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="collaborate_based_algo.CollaborateBasedAlgo._init_surprise_model">
+<code class="descname">_init_surprise_model</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/collaborate_based_algo.html#CollaborateBasedAlgo._init_surprise_model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#collaborate_based_algo.CollaborateBasedAlgo._init_surprise_model" title="Permalink to this definition">¶</a></dt>
+<dd><p>See <a class="reference internal" href="surprise_base_algo.html#surprise_base_algo.SurpriseBaseAlgo._init_surprise_model" title="surprise_base_algo.SurpriseBaseAlgo._init_surprise_model"><code class="xref py py-meth docutils literal notranslate"><span class="pre">SurpriseBaseAlgo._init_surprise_model</span></code></a> for more details.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">KNNBasic() from surprise</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/collaborate_based_algo.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">WebDataMining  documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2018, Lw.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.2.
+    </div>
+  </body>
+</html>

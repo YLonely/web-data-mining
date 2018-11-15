@@ -1,0 +1,125 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>tf_idf_build &#8212; WebDataMining  documentation</title>
+    <link rel="stylesheet" href="../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">WebDataMining  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for tf_idf_build</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">gensim</span> <span class="k">import</span> <span class="n">corpora</span><span class="p">,</span> <span class="n">models</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">pickle</span> <span class="k">as</span> <span class="nn">pic</span>
+<span class="kn">from</span> <span class="nn">ast</span> <span class="k">import</span> <span class="n">literal_eval</span>
+
+
+<div class="viewcode-block" id="TfIdfGenerator"><a class="viewcode-back" href="../tf_idf_build.html#tf_idf_build.TfIdfGenerator">[docs]</a><span class="k">class</span> <span class="nc">TfIdfGenerator</span><span class="p">:</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">generate_data_path</span><span class="p">,</span> <span class="n">original_tokens_path</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__original_tokens_path</span> <span class="o">=</span> <span class="n">original_tokens_path</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__generate_data_path</span> <span class="o">=</span> <span class="n">generate_data_path</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__news_tokens</span> <span class="o">=</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="TfIdfGenerator.generate"><a class="viewcode-back" href="../tf_idf_build.html#tf_idf_build.TfIdfGenerator.generate">[docs]</a>    <span class="k">def</span> <span class="nf">generate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">news_tokens</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">auto_save</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This method builds TF-IDF vectors for news.</span>
+
+<span class="sd">        :param news_tokens: news id and its tokens, if None, method will load tokens from __original_tokens_path</span>
+<span class="sd">        :param auto_save: if true,method will automatically save news id and its vector to a csv file.</span>
+<span class="sd">        :return: a pd.DataFrame of news id and its vector</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">news_tokens</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__original_tokens_path</span> <span class="o">!=</span> <span class="s1">&#39;&#39;</span><span class="p">),</span> <span class="s1">&#39;No data source.&#39;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__news_tokens</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__original_tokens_path</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__news_tokens</span> <span class="o">=</span> <span class="n">news_tokens</span>
+        <span class="n">pure_tokens</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__news_tokens</span><span class="p">[</span><span class="s1">&#39;tokens&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+        <span class="n">pure_tokens</span> <span class="o">=</span> <span class="p">[</span><span class="n">literal_eval</span><span class="p">(</span><span class="n">t</span><span class="p">)</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">pure_tokens</span><span class="p">]</span>  <span class="c1"># transform list-like strings to list</span>
+        <span class="n">word_dict</span> <span class="o">=</span> <span class="n">corpora</span><span class="o">.</span><span class="n">Dictionary</span><span class="p">(</span><span class="n">pure_tokens</span><span class="p">)</span>  <span class="c1"># Used in LSA or LDA algo</span>
+        <span class="n">news_bow</span> <span class="o">=</span> <span class="p">[</span><span class="n">word_dict</span><span class="o">.</span><span class="n">doc2bow</span><span class="p">(</span><span class="n">t</span><span class="p">)</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">pure_tokens</span><span class="p">]</span>
+        <span class="n">algo</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">TfidfModel</span><span class="p">(</span><span class="n">news_bow</span><span class="p">)</span>
+        <span class="n">corpus_tfidf</span> <span class="o">=</span> <span class="n">algo</span><span class="p">[</span><span class="n">news_bow</span><span class="p">]</span>
+        <span class="n">news_vec</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">corpus_tfidf</span><span class="p">:</span>
+            <span class="n">news_vec</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">v</span> <span class="k">for</span> <span class="p">(</span><span class="n">_</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="ow">in</span> <span class="n">t</span><span class="p">])</span>
+        <span class="n">newsid_tfvec</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s1">&#39;news_id&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">__news_tokens</span><span class="p">[</span><span class="s1">&#39;news_id&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span> <span class="s1">&#39;tf_vec&#39;</span><span class="p">:</span> <span class="n">news_vec</span><span class="p">})</span>
+        <span class="k">if</span> <span class="n">auto_save</span><span class="p">:</span>
+            <span class="n">f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__generate_data_path</span> <span class="o">+</span> <span class="s1">&#39;corpus_tfidf.pdata&#39;</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span>
+            <span class="n">pic</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">corpus_tfidf</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+            <span class="n">word_dict</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__generate_data_path</span> <span class="o">+</span> <span class="s1">&#39;word_dict.dict&#39;</span><span class="p">)</span>
+            <span class="n">newsid_tfvec</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__generate_data_path</span> <span class="o">+</span> <span class="s1">&#39;newsid_tfvec.csv&#39;</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">newsid_tfvec</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">WebDataMining  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2018, Lw.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.2.
+    </div>
+  </body>
+</html>

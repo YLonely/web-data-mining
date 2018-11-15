@@ -1,0 +1,176 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>网络数据挖掘项目文档 &#8212; WebDataMining  documentation</title>
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="#">WebDataMining  documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="id1">
+<h1>网络数据挖掘项目文档<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="id2">
+<h2>注意事项<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h2>
+<p>本次项目使用的Python版本为3.6.5,推荐直接通过Anaconda进行安装，系统环境推荐使用基于*nix的系统，主要使用
+到的Python包如下(粗体表示需要额外安装，之后可能还会有更新)：</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li>pandas</li>
+<li>numpy</li>
+<li>pickle</li>
+<li><strong>gensim</strong> <a class="reference external" href="https://radimrehurek.com/gensim/">安装</a></li>
+<li><strong>jieba</strong> <a class="reference external" href="https://github.com/fxsjy/jieba">安装</a></li>
+<li><strong>faiss</strong> <a class="reference external" href="https://github.com/facebookresearch/faiss">安装</a></li>
+<li><strong>surprise</strong> <a class="reference external" href="https://github.com/NicolasHug/Surprise">安装</a></li>
+</ol>
+</div></blockquote>
+</div>
+<div class="section" id="id7">
+<h2>项目结构<a class="headerlink" href="#id7" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id8">
+<h3>说明<a class="headerlink" href="#id8" title="Permalink to this headline">¶</a></h3>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DataAnalysis项目主要对数据进行预处理，包括新闻抽取，用户历史记录抽取过滤以及对新闻内容进行分词以建立其
+TF-IDF向量等工作，同时该项目下存储了原始数据以及算法生成的中间数据。</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Recommend项目主要包括各种推荐算法的实现与封装，目前已可以正常使用的算法有基于内容推荐算法(topic_based_algo.py)，协同过滤推荐算法(collaborate_based_algo.py)以及一个
+随机推荐算法(baseline.py)。同时该项目下包含一个工具类(utils.py)用于对算法在本次数据集上的性能进行评测，目前提供召回率与精确度两种度量方式，其定义如下：</p>
+<img alt="_images/Recall.png" src="_images/Recall.png" />
+<img alt="_images/Precision.png" src="_images/Precision.png" />
+</div>
+<div class="section" id="id9">
+<h3>结构<a class="headerlink" href="#id9" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<div><ul class="simple">
+<li><dl class="first docutils">
+<dt>DataMiningProject</dt>
+<dd><ul class="first last">
+<li><dl class="first docutils">
+<dt>DataAnalysis</dt>
+<dd><ul class="first last">
+<li><a class="reference external" href="datas.html">datas</a></li>
+<li><a class="reference external" href="generate_datas.html">generate_datas</a></li>
+<li><a class="reference external" href="preprocess.html">preprocess.py</a></li>
+<li><a class="reference external" href="tf_idf_build.html">tf_idf_build.py</a></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>Recommend</dt>
+<dd><ul class="first last">
+<li><dl class="first docutils">
+<dt>algo_set</dt>
+<dd><ul class="first last">
+<li><a class="reference external" href="base_algo.html">base_algo.py</a></li>
+<li><a class="reference external" href="baseline.html">baseline.py</a></li>
+<li><a class="reference external" href="collaborate_based_algo.html">collaborate_based_algo.py</a></li>
+<li><a class="reference external" href="content_based_algo.html">content_based_algo.py</a></li>
+<li><a class="reference external" href="surprise_base_algo.html">surprise_base_algo.py</a></li>
+<li><a class="reference external" href="topic_based_algo.html">topic_based_algo.py</a></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><a class="reference external" href="utils.html">utils.py</a></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</div></blockquote>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="#">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">网络数据挖掘项目文档</a><ul>
+<li><a class="reference internal" href="#id2">注意事项</a></li>
+<li><a class="reference internal" href="#id7">项目结构</a><ul>
+<li><a class="reference internal" href="#id8">说明</a></li>
+<li><a class="reference internal" href="#id9">结构</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/index.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="#">WebDataMining  documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2018, Lw.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.2.
+    </div>
+  </body>
+</html>

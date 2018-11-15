@@ -1,0 +1,177 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>preprocess &#8212; WebDataMining  documentation</title>
+    <link rel="stylesheet" href="../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">WebDataMining  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for preprocess</h1><div class="highlight"><pre>
+<span></span><span class="c1"># coding=utf-8</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">jieba.posseg</span> <span class="k">as</span> <span class="nn">pseg</span>
+<span class="kn">import</span> <span class="nn">codecs</span>
+<span class="kn">import</span> <span class="nn">pickle</span> <span class="k">as</span> <span class="nn">pic</span>
+
+
+<div class="viewcode-block" id="PreProcessor"><a class="viewcode-back" href="../preprocess.html#preprocess.PreProcessor">[docs]</a><span class="k">class</span> <span class="nc">PreProcessor</span><span class="p">:</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">original_data_path</span><span class="p">,</span> <span class="n">generate_data_path</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__generate_data_path</span> <span class="o">=</span> <span class="n">generate_data_path</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__original_data_path</span> <span class="o">=</span> <span class="n">original_data_path</span>
+
+<div class="viewcode-block" id="PreProcessor.extract_news"><a class="viewcode-back" href="../preprocess.html#preprocess.PreProcessor.extract_news">[docs]</a>    <span class="k">def</span> <span class="nf">extract_news</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">auto_save</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This func extract news from data and save them to csv file.</span>
+
+<span class="sd">        :param auto_save: If true,func will automatically save news id with its content to a csv file.</span>
+
+<span class="sd">        :return: A pd.DataFrame with two attributes: news_id and content</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">filepath_or_buffer</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">__original_data_path</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s2">&quot;</span><span class="se">\\</span><span class="s2">t&quot;</span><span class="p">,</span> <span class="n">names</span><span class="o">=</span><span class="p">[</span>
+            <span class="s1">&#39;user_id&#39;</span><span class="p">,</span> <span class="s1">&#39;news_id&#39;</span><span class="p">,</span> <span class="s1">&#39;view_time&#39;</span><span class="p">,</span> <span class="s1">&#39;title&#39;</span><span class="p">,</span> <span class="s1">&#39;content&#39;</span><span class="p">,</span> <span class="s1">&#39;publish_time&#39;</span><span class="p">],</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="p">[[</span><span class="s1">&#39;news_id&#39;</span><span class="p">,</span> <span class="s1">&#39;title&#39;</span><span class="p">,</span> <span class="s1">&#39;content&#39;</span><span class="p">]]</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">drop_duplicates</span><span class="p">()</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">data</span><span class="p">[</span><span class="s1">&#39;content&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;title&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;content&#39;</span><span class="p">]</span>
+        <span class="n">newsid_content</span> <span class="o">=</span> <span class="n">data</span><span class="p">[[</span><span class="s1">&#39;news_id&#39;</span><span class="p">,</span> <span class="s1">&#39;content&#39;</span><span class="p">]]</span>
+        <span class="k">if</span> <span class="n">auto_save</span><span class="p">:</span>
+            <span class="n">newsid_content</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__generate_data_path</span> <span class="o">+</span> <span class="s2">&quot;newsid_content.csv&quot;</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">newsid_content</span></div>
+
+<div class="viewcode-block" id="PreProcessor.generate_tokens"><a class="viewcode-back" href="../preprocess.html#preprocess.PreProcessor.generate_tokens">[docs]</a>    <span class="k">def</span> <span class="nf">generate_tokens</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">newsid_content</span><span class="p">,</span> <span class="n">stop_words_path</span><span class="p">,</span> <span class="n">auto_save</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This func generate tokens for news,and records the ids of short news.</span>
+
+<span class="sd">        :param newsid_content: a pd.DataFrame of news id and its content</span>
+<span class="sd">        :param stop_words_path: file path of chinese stop words</span>
+<span class="sd">        :param auto_save: same above &#39;extract_news(..auto_save)&#39;</span>
+
+<span class="sd">        :return: a pair contains two stuff: a pd.DataFrame of news id and its tokens,and the news id of the short-content news</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">stop_words</span> <span class="o">=</span> <span class="n">codecs</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">stop_words_path</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s1">&#39;utf8&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">readlines</span><span class="p">()</span>
+        <span class="n">stop_words</span> <span class="o">=</span> <span class="p">[</span><span class="n">w</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">stop_words</span><span class="p">]</span>
+        <span class="n">stop_flags</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="s1">&#39;c&#39;</span><span class="p">,</span> <span class="s1">&#39;u&#39;</span><span class="p">,</span> <span class="s1">&#39;d&#39;</span><span class="p">,</span> <span class="s1">&#39;p&#39;</span><span class="p">,</span> <span class="s1">&#39;t&#39;</span><span class="p">,</span> <span class="s1">&#39;uj&#39;</span><span class="p">,</span> <span class="s1">&#39;m&#39;</span><span class="p">,</span> <span class="s1">&#39;f&#39;</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">]</span>
+
+        <span class="k">def</span> <span class="nf">_tokenization</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">words</span> <span class="o">=</span> <span class="n">pseg</span><span class="o">.</span><span class="n">cut</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">word</span><span class="p">,</span> <span class="n">flag</span> <span class="ow">in</span> <span class="n">words</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">flag</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">stop_flags</span> <span class="ow">and</span> <span class="n">word</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">stop_words</span><span class="p">:</span>
+                    <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">word</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">result</span>
+
+        <span class="n">short_ids</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">useful_ids</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">threshold</span> <span class="o">=</span> <span class="mi">2</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">newsid_content</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+            <span class="n">news_id</span> <span class="o">=</span> <span class="n">newsid_content</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="s1">&#39;news_id&#39;</span><span class="p">]</span>
+            <span class="n">content</span> <span class="o">=</span> <span class="n">newsid_content</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="s1">&#39;content&#39;</span><span class="p">]</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">_tokenization</span><span class="p">(</span><span class="n">content</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">result</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">threshold</span><span class="p">:</span>
+                <span class="n">short_ids</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">news_id</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">useful_ids</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">news_id</span><span class="p">)</span>
+                <span class="n">res</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+
+        <span class="k">assert</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">useful_ids</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">res</span><span class="p">)),</span> <span class="s2">&quot;news ids length error&quot;</span>
+        <span class="n">newsid_tokens</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s1">&#39;news_id&#39;</span><span class="p">:</span> <span class="n">useful_ids</span><span class="p">,</span> <span class="s1">&#39;tokens&#39;</span><span class="p">:</span> <span class="n">res</span><span class="p">})</span>
+        <span class="k">if</span> <span class="n">auto_save</span><span class="p">:</span>
+            <span class="n">newsid_tokens</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__generate_data_path</span> <span class="o">+</span> <span class="s1">&#39;newsid_tokens.csv&#39;</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span>
+            <span class="n">f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__generate_data_path</span> <span class="o">+</span> <span class="s1">&#39;short_ids.pdata&#39;</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span>
+            <span class="n">pic</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">short_ids</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">newsid_tokens</span><span class="p">,</span> <span class="n">short_ids</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="PreProcessor.extract_view_log"><a class="viewcode-back" href="../preprocess.html#preprocess.PreProcessor.extract_view_log">[docs]</a>    <span class="k">def</span> <span class="nf">extract_view_log</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">news_to_avoid</span><span class="o">=</span><span class="p">[],</span> <span class="n">auto_save</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This func extract user view log from data and save to csv file.</span>
+<span class="sd">        Note that some news&#39; content may be very short after segmentation. just erase them from user view log.</span>
+
+<span class="sd">        :param news_to_avoid: content-short news id</span>
+<span class="sd">        :param auto_save: same above</span>
+
+<span class="sd">        :return: user view log</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">filepath_or_buffer</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">__original_data_path</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s2">&quot;</span><span class="se">\\</span><span class="s2">t&quot;</span><span class="p">,</span> <span class="n">names</span><span class="o">=</span><span class="p">[</span>
+            <span class="s1">&#39;user_id&#39;</span><span class="p">,</span> <span class="s1">&#39;news_id&#39;</span><span class="p">,</span> <span class="s1">&#39;view_time&#39;</span><span class="p">,</span> <span class="s1">&#39;title&#39;</span><span class="p">,</span> <span class="s1">&#39;content&#39;</span><span class="p">,</span> <span class="s1">&#39;publish_time&#39;</span><span class="p">],</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span>
+        <span class="n">userid_newsid</span> <span class="o">=</span> <span class="n">data</span><span class="p">[[</span><span class="s1">&#39;user_id&#39;</span><span class="p">,</span> <span class="s1">&#39;news_id&#39;</span><span class="p">]]</span>
+        <span class="n">userid_newsid</span> <span class="o">=</span> <span class="n">userid_newsid</span><span class="o">.</span><span class="n">drop_duplicates</span><span class="p">()</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">userid_newsid</span> <span class="o">=</span> <span class="n">userid_newsid</span><span class="p">[</span><span class="o">~</span><span class="n">userid_newsid</span><span class="p">[</span><span class="s1">&#39;news_id&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">news_to_avoid</span><span class="p">)]</span>
+        <span class="k">if</span> <span class="n">auto_save</span><span class="p">:</span>
+            <span class="n">userid_newsid</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__generate_data_path</span> <span class="o">+</span> <span class="s2">&quot;userid_newsid.csv&quot;</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">userid_newsid</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">WebDataMining  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2018, Lw.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.2.
+    </div>
+  </body>
+</html>

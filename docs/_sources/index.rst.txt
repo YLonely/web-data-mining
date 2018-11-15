@@ -1,0 +1,54 @@
+.. WebDataMining documentation master file, created by
+   sphinx-quickstart on Wed Nov 14 19:46:17 2018.
+   You can adapt this file completely to your liking, but it should at least
+   contain the root `toctree` directive.
+
+网络数据挖掘项目文档
+=========================================
+注意事项
+----------------
+本次项目使用的Python版本为3.6.5,推荐直接通过Anaconda进行安装，系统环境推荐使用基于*nix的系统，主要使用
+到的Python包如下(粗体表示需要额外安装，之后可能还会有更新)：
+
+    #. pandas
+    #. numpy
+    #. pickle
+    #. **gensim** `安装 <https://radimrehurek.com/gensim/>`_
+    #. **jieba** `安装 <https://github.com/fxsjy/jieba>`_
+    #. **faiss** `安装 <https://github.com/facebookresearch/faiss>`_
+    #. **surprise** `安装 <https://github.com/NicolasHug/Surprise>`_
+
+
+
+项目结构
+-------------------
+说明
+^^^^^^^^^^^^^^^^^^^
+        DataAnalysis项目主要对数据进行预处理，包括新闻抽取，用户历史记录抽取过滤以及对新闻内容进行分词以建立其
+TF-IDF向量等工作，同时该项目下存储了原始数据以及算法生成的中间数据。
+
+        Recommend项目主要包括各种推荐算法的实现与封装，目前已可以正常使用的算法有基于内容推荐算法(topic_based_algo.py)，协同过滤推荐算法(collaborate_based_algo.py)以及一个
+随机推荐算法(baseline.py)。同时该项目下包含一个工具类(utils.py)用于对算法在本次数据集上的性能进行评测，目前提供召回率与精确度两种度量方式，其定义如下：
+
+
+.. image:: ../build/html/img/Recall.png
+.. image:: ../build/html/img/Precision.png
+
+结构
+^^^^^^^^^^^^^^^^^^^^^
+    * DataMiningProject
+        * DataAnalysis
+            * `datas <datas.html>`_
+            * `generate_datas <generate_datas.html>`_
+            * `preprocess.py <preprocess.html>`_
+            * `tf\_idf\_build.py <tf_idf_build.html>`_
+        * Recommend
+            * algo\_set
+                * `base\_algo.py <base_algo.html>`_
+                * `baseline.py <baseline.html>`_
+                * `collaborate\_based\_algo.py <collaborate_based_algo.html>`_
+                * `content\_based\_algo.py <content_based_algo.html>`_
+                * `surprise\_base\_algo.py <surprise_base_algo.html>`_
+                * `topic\_based\_algo.py <topic_based_algo.html>`_
+            * `utils.py <utils.html>`_
+

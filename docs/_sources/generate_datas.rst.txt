@@ -1,0 +1,26 @@
+generate\_datas文件夹
+=========================
+说明
+----------------------
+该文件夹包含如下文件：
+
+1.  **corpus\_tfidf.pdata**
+        采用pickle包存储的供gensim包中的LDA模型与LSI模型使用的训练数据。
+
+2.  **newsid\_content.csv**
+        csv格式的从原始数据中抽取出的新闻id与其内容的表。
+
+3.  **newsid\_tfvec.csv**
+        csv格式的新闻id与其对应的TF-IDF向量，注意其中某些在分词之后词量很少的新闻被过滤掉了（词量小于2）。
+
+4.  **newsid\_tokens.csv**
+        csv格式的新闻id与其对应的分词后的单词。
+
+5.  **short_ids.pdata**
+        采用pickle包存储的分词后新闻内容很短的新闻id，供后续处理使用。
+
+6.  **userid_newsid.csv**
+        用户浏览历史数据，只有用户id与新闻id，注意较短新闻的浏览记录已经被过滤了。
+
+7.  **word_dict.dict**
+        采用pickle包存储的Dictionary数据，供gensim包中的LDA模型与LSI模型使用。
