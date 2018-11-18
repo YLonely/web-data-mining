@@ -33,6 +33,14 @@ class BaseAlgo:
         """
         raise NotImplementedError()
 
+    def to_dict(self):
+        """
+        Convert algorithm model to a dict which contains algorithm's type and it's main hyper-parameters.
+
+        :return: A dict contains type and hyper-parameters.
+        """
+        raise NotImplementedError()
+
     @classmethod
     def load(cls, fname):
         """

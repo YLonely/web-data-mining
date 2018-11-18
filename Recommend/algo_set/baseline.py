@@ -19,3 +19,9 @@ class BaseLineAlgo(SurpriseBaseAlgo):
         :return: NormalPredictor() from surprise.
         """
         return prediction_algorithms.random_pred.NormalPredictor()
+
+    def to_dict(self):
+        """
+        See :meth:`BaseAlgo.to_dict <base_algo.BaseAlgo.to_dict>` for more details.
+        """
+        return {'type': 'BaseLineAlgo'}

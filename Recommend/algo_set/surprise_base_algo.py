@@ -61,6 +61,9 @@ class SurpriseBaseAlgo(BaseAlgo):
         _, _, _, est, _ = self._surprise_model.predict(u_id, i_id)
         return est
 
+    def to_dict(self):
+        pass
+
     @classmethod
     def load(cls, fname):
         res = super(SurpriseBaseAlgo, cls).load(fname)

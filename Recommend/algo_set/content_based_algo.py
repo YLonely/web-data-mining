@@ -21,7 +21,7 @@ class ContentBasedAlgo(BaseAlgo):
         self._item_vector.columns = ['item_id', 'vec']
         self._item_vector = self._item_vector_process(self._item_vector)
         self._retrieval_model = self._generate_retrieval_model()
-        self._user_vector = None
+        self._user_vector = {}
         self._user_log = None
 
     def train(self, train_set):
@@ -33,9 +33,11 @@ class ContentBasedAlgo(BaseAlgo):
         self._user_log = pd.DataFrame(train_set)
         self._user_log.columns = ['user_id', 'item_id']
         '''Calculate user model'''
+        # TODO: Use python3 build-in dict to replace DataFrame-type user_vecs
         user_ids = self._user_log['user_id'].drop_duplicates().values.tolist()
         user_vecs = [self._build_user_model(id) for id in user_ids]
-        self._user_vector = pd.DataFrame({'user_id': user_ids, 'vec': user_vecs})
+        for i in range(len(user_ids)):
+            self._user_vector[user_ids[i]] = user_vecs[i]
         return self
 
     def top_k_recommend(self, u_id, k):
@@ -47,8 +49,7 @@ class ContentBasedAlgo(BaseAlgo):
         specific_user_log = self._user_log[self._user_log['user_id'] == u_id]
         viewed_num = specific_user_log.shape[0]
         assert (viewed_num != 0), "User id doesn't exist."
-        specific_user_vec = self._user_vector[self._user_vector['user_id'] == u_id]['vec'].values[0]
-        specific_user_vec = np.array(specific_user_vec)
+        specific_user_vec = self._user_vector[u_id]
         normal_specific_user_vec = _vector_normalize(np.array([specific_user_vec]).astype('float32'))
         ''' k+viewed_num make sure that we have at least k unseen items '''
         distance, index = self._retrieval_model.search(normal_specific_user_vec, k + viewed_num)
@@ -101,7 +102,9 @@ class ContentBasedAlgo(BaseAlgo):
         specific_user_log.drop_duplicates(inplace=True)
         log_vecs = pd.merge(specific_user_log, self._item_vector, how='left', on=['item_id'])
         assert (sum(log_vecs['vec'].notnull()) == log_vecs.shape[0]), 'Item vector sheet has null values'
-        return _calc_cos_dis_median(log_vecs['vec'].values)
+        # vecs = np.array(log_vecs['vec'].values.tolist())
+        return _calc_dim_average(np.array(log_vecs['vec'].values.tolist()))
+        # return vecs.sum(axis=0) / vecs.shape[0]
 
     def _item_vector_process(self, item_vector):
         """
@@ -114,6 +117,24 @@ class ContentBasedAlgo(BaseAlgo):
         """
         pass
 
+    def to_dict(self):
+        return {'dimension': self._dim}
+
+
+def _calc_dim_average(vectors_array):
+    """
+    This func calculate the average value on every dimension of vectors_array, but it only count none-zero values.
+    :param vectors_array: np.array contains a list of vectors.
+    :return: A vector has the average value in every dimension.
+    """
+    array = np.array(vectors_array)
+    threshold = 0.001
+    res = array.sum(axis=0)
+    valid_count = (array > threshold).sum(axis=0)
+    valid_count[valid_count == 0] = 1
+    res /= valid_count
+    return res
+
 
 def _vector_normalize(vectors_array):
     vector_len_list = np.sqrt((vectors_array ** 2).sum(axis=1, keepdims=True))
@@ -125,10 +146,11 @@ def _calc_cos_dis_median(vectors_array):  # np.array
     """
     Like the geometric median calculation,but use a different distance function.
     This func find a median in the vector space that have the smallest sum of distance
-    among other vectors in vectors_array. it uses cosine value to indicate distance
+    among other vectors in vectors_array. it uses cosine value to indicate distance/
+    :param vectors_array: np.array contains a list of vectors.
+    :return: A vector represents the distance median.
     """
     # normalization
-    vectors_array = np.array(vectors_array.tolist())
     normal_vectors_array = _vector_normalize(vectors_array)
     sqrt_sum = np.sqrt(((normal_vectors_array.sum(axis=0)) ** 2).sum())
     part_sum = normal_vectors_array.sum(axis=0)

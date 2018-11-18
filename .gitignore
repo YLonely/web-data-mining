@@ -1,0 +1,10 @@
+auto_encoder.py
+backup.py
+knn.py
+**/main.py
+.*
+*.log
+!.gitignore
+**/__pycache__/**
+data.txt
+.idea

@@ -15,7 +15,6 @@ class CollaborateBasedAlgo(SurpriseBaseAlgo):
         """
         self._user_based = user_based
         self._sim_func = sim_func
-        self._user_based = user_based
         self._k = k
         super().__init__()
 
@@ -27,3 +26,10 @@ class CollaborateBasedAlgo(SurpriseBaseAlgo):
         """
         sim_options = {'name': self._sim_func, 'user_based': self._user_based}
         return prediction_algorithms.KNNBasic(k=self._k, sim_options=sim_options)
+
+    def to_dict(self):
+        """
+        See :meth:`BaseAlgo.to_dict <base_algo.BaseAlgo.to_dict>` for more details.
+        """
+        return {'type': 'Collaborative filtering', 'user_based': self._user_based, 'sim_fun': self._sim_func,
+                'k': self._k}

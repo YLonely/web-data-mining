@@ -32,3 +32,10 @@ class SVDpp(SurpriseBaseAlgo):
         """
         return matrix_factorization.SVDpp(self._n_factors, self._n_epochs, self._init_mean, self._init_std_dev,
                                           self._lr_all, self._reg_all)
+
+    def to_dict(self):
+        """
+        See :meth:`BaseAlgo.to_dict <base_algo.BaseAlgo.to_dict>` for more details.
+        """
+        return {'type': 'SVD++', 'factors': self._n_factors, 'epochs': self._n_epochs, 'init_mean': self._init_mean,
+                'init_std_dev': self._init_std_dev, 'lr_all': self._lr_all, 'reg_all': self._reg_all}
