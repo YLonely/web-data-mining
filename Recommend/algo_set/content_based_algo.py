@@ -29,18 +29,45 @@ class ContentBasedAlgo(BaseAlgo):
 
     def train(self, train_set):
         """
-        Calculate user model for every user. Use multi-process to speed up the training.
+        Main job is calculating user model for every user. Use multi-process to speed up the training.
 
         See :meth:`BaseAlog.train <base_algo.BaseAlgo.train>` for more details.
         """
+
+        class TrainJob(mp.Process):
+            def __init__(self, func, result_list, *args):
+                super().__init__()
+                self.func = func
+                self.args = args
+                self.res = result_list
+
+            def run(self):
+                self.res.append(self.func(*self.args))
+
         self._user_log = pd.DataFrame(train_set)
         self._user_log.columns = ['user_id', 'item_id']
+        self._user_log.drop_duplicates(inplace=True)
         '''Calculate user model'''
-        # TODO: Use python3 build-in dict to replace DataFrame-type user_vecs
+        manager = mp.Manager()
+        res_list = manager.list()
         user_ids = self._user_log['user_id'].drop_duplicates().values.tolist()
-        user_vecs = [self._build_user_model(id) for id in user_ids]
-        for i in range(len(user_ids)):
-            self._user_vector[user_ids[i]] = user_vecs[i]
+        part = 3
+        cpus = cpu_count()
+        job_list = []
+        jobs = int(cpus / part)  # Use 1/3 of the cpus
+        if jobs <= 0:
+            jobs = 1
+        part_ids_num = int((len(user_ids) + jobs - 1) / jobs)
+        for i in range(jobs):
+            part_ids = user_ids[i * part_ids_num:i * part_ids_num + part_ids_num]
+            j = TrainJob(self._build_user_model, res_list, part_ids)
+            job_list.append(j)
+            j.start()
+        for job in job_list:
+            job.join()
+        for ids_dict in res_list:
+            for key in ids_dict.keys():
+                self._user_vector[key] = ids_dict[key]
         return self
 
     def top_k_recommend(self, u_id, k):
@@ -95,20 +122,20 @@ class ContentBasedAlgo(BaseAlgo):
         retrieval_model.add(item_vector_array)
         return retrieval_model
 
-    def _build_user_model(self, user_id):
+    def _build_user_model(self, user_ids):
         """
         This method will calculate user model for all users in user_ids.
 
         :param user_ids: users' id list
         :return: A dict contains user's id and vector.
         """
-        specific_user_log = self._user_log[self._user_log['user_id'] == user_id]
-        specific_user_log.drop_duplicates(inplace=True)
-        log_vecs = pd.merge(specific_user_log, self._item_vector, how='left', on=['item_id'])
-        assert (sum(log_vecs['vec'].notnull()) == log_vecs.shape[0]), 'Item vector sheet has null values'
-        # vecs = np.array(log_vecs['vec'].values.tolist())
-        return _calc_dim_average(np.array(log_vecs['vec'].values.tolist()))
-        # return vecs.sum(axis=0) / vecs.shape[0]
+        res_dict = {}
+        for user_id in user_ids:
+            specific_user_log = self._user_log[self._user_log['user_id'] == user_id]
+            log_vecs = pd.merge(specific_user_log, self._item_vector, how='left', on=['item_id'])
+            assert (sum(log_vecs['vec'].notnull()) == log_vecs.shape[0]), 'Item vector sheet has null values'
+            res_dict[user_id] = _calc_dim_average(np.array(log_vecs['vec'].values.tolist()))
+        return res_dict
 
     def to_dict(self):
         pass
@@ -117,6 +144,7 @@ class ContentBasedAlgo(BaseAlgo):
 def _calc_dim_average(vectors_array):
     """
     This func calculate the average value on every dimension of vectors_array, but it only count none-zero values.
+
     :param vectors_array: np.array contains a list of vectors.
     :return: A vector has the average value in every dimension.
     """
@@ -134,25 +162,25 @@ def _vector_normalize(vectors_array):
     res = vectors_array / vector_len_list
     return res
 
-
-def _calc_cos_dis_median(vectors_array):  # np.array
-    """
-    Like the geometric median calculation,but use a different distance function.
-    This func find a median in the vector space that have the smallest sum of distance
-    among other vectors in vectors_array. it uses cosine value to indicate distance/
-    :param vectors_array: np.array contains a list of vectors.
-    :return: A vector represents the distance median.
-    """
-    # normalization
-    normal_vectors_array = _vector_normalize(vectors_array)
-    sqrt_sum = np.sqrt(((normal_vectors_array.sum(axis=0)) ** 2).sum())
-    part_sum = normal_vectors_array.sum(axis=0)
-    x1 = part_sum / sqrt_sum
-    x2 = -x1
-    distance_sum1 = (normal_vectors_array * x1).sum()
-    distance_sum2 = (normal_vectors_array * x2).sum()
-    if distance_sum1 > distance_sum2:
-        res = x1
-    else:
-        res = x2
-    return res
+# def _calc_cos_dis_median(vectors_array):  # np.array
+#     """
+#     Like the geometric median calculation,but use a different distance function.
+#     This func find a median in the vector space that have the smallest sum of distance
+#     among other vectors in vectors_array. it uses cosine value to indicate distance
+#
+#     :param vectors_array: np.array contains a list of vectors.
+#     :return: A vector represents the distance median.
+#     """
+#     # normalization
+#     normal_vectors_array = _vector_normalize(vectors_array)
+#     sqrt_sum = np.sqrt(((normal_vectors_array.sum(axis=0)) ** 2).sum())
+#     part_sum = normal_vectors_array.sum(axis=0)
+#     x1 = part_sum / sqrt_sum
+#     x2 = -x1
+#     distance_sum1 = (normal_vectors_array * x1).sum()
+#     distance_sum2 = (normal_vectors_array * x2).sum()
+#     if distance_sum1 > distance_sum2:
+#         res = x1
+#     else:
+#         res = x2
+#     return res

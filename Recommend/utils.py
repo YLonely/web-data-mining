@@ -63,7 +63,7 @@ class Evaluator:
         pre = sum(precision_log) / len(precision_log)
         if auto_log:
             _log_to_file(algo.to_dict(), recall=rec, precision=pre, shuffle=shuffle, random_state=random_state,
-                         time_cost=end_time - start_time)
+                         time_cost=end_time - start_time, debug=debug)
         return rec, pre
 
 
