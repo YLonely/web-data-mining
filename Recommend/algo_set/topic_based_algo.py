@@ -5,13 +5,11 @@ import numpy as np
 
 
 class TopicBasedAlgo(ContentBasedAlgo):
-    def __init__(self, item_vector=None, topic_n=100, corpus=None, id2word=None, chunksize=100, topic_type='lda',
+    def __init__(self, item_ids, topic_n=100, corpus=None, id2word=None, chunksize=100, topic_type='lda',
                  power_iters=2, extra_samples=100, passes=1):
         """
-        :param item_vector: See :meth:`ContentBasedAlgo.__init__ <content_based_algo.ContentBasedAlgo.__init__>` \
-        for more details.
-        :param topic_n: dimension. :meth:`ContentBasedAlgo.__init__ <content_based_algo.ContentBasedAlgo.__init__>` \
-        for more details.
+        :param item_ids: A list or array contains items' ids.
+        :param topic_n: The number of requested latent topics to be extracted from the training corpus.
         :param corpus: Stream of document vectors or sparse matrix of shape (num_terms, num_documents).used by LSI \
         or LDA model.
         :param id2word: ID to word mapping ,used by LSI or LDA model.
@@ -22,73 +20,73 @@ class TopicBasedAlgo(ContentBasedAlgo):
         :param extra_samples: (**LSI parameter**)Extra samples to be used besides the rank k. Can improve accuracy.
         :param passes: (**LDA parameter**)Number of passes through the corpus during training.
         """
-        self.__topic = topic_type
-        self.__corpus = corpus
-        self.__id2word = id2word
-        self.__topic_model = None
-        self.__chunksize = chunksize
-        self.__power_iters = power_iters
-        self.__extra_samples = extra_samples
-        self.__passes = passes
-        super().__init__(item_vector, topic_n)
+        self._item_ids = item_ids
+        self._topic_n = topic_n
+        self._topic = topic_type
+        self._corpus = corpus
+        self._id2word = id2word
+        self._topic_model = None
+        self._chunksize = chunksize
+        self._power_iters = power_iters
+        self._extra_samples = extra_samples
+        self._passes = passes
+        item_vectors = self._generate_item_vector()
+        super().__init__(item_vectors, topic_n)
 
     @classmethod
     def load(cls, fname):
         res = super(TopicBasedAlgo, cls).load(fname)
-        assert (hasattr(res, '__topic')), 'Not a standard TopicBasedAlgo class.'
-        if not getattr(res, '_initial'):
-            topic = getattr(res, '__topic')
-            if topic == 'lsi':
-                model_fname = '.'.join([fname, 'lsi'])
-                setattr(res, '__topic_model', models.LsiModel.load(model_fname))
-            elif topic == 'lda':
-                model_fname = '.'.join([fname, 'lda'])
-                setattr(res, '__topic_model', models.LdaModel.load(model_fname))
+        assert (hasattr(res, '_topic')), 'Not a standard TopicBasedAlgo class.'
+        topic = getattr(res, '_topic')
+        if topic == 'lsi':
+            model_fname = '.'.join([fname, 'lsi'])
+            setattr(res, '_topic_model', models.LsiModel.load(model_fname))
+        elif topic == 'lda':
+            model_fname = '.'.join([fname, 'lda'])
+            setattr(res, '_topic_model', models.LdaModel.load(model_fname))
         return res
 
     def save(self, fname, *args):
-        ignore = ['__topic_model']
+        ignore = ['_topic_model']
+        if self._topic_model is not None:
+            self._topic_model.save('.'.join([fname, self._topic]))
         super().save(fname, ignore)
-        if self.__topic_model is not None:
-            self.__topic_model.save('.'.join([fname, self.__topic]))
 
-    def _item_vector_process(self, item_vector):
+    def _generate_item_vector(self):
         """
-        Use LDA or LSI algorithm to process the item vectors.
+        Use LDA or LSI algorithm to process TF-IDF vector and generate new item vectors.
 
-        See :meth:`ContentBasedAlgo._item_vector_process <content_based_algo.ContentBasedAlgo._item_vector_process>` \
-        for more details.
+        :return: DataFrame contains item id and it's new vector
         """
-        if self.__topic == 'lsi':
-            self.__topic_model = models.LsiModel(corpus=self.__corpus, num_topics=self._dim, id2word=self.__id2word,
-                                                 chunksize=self.__chunksize, power_iters=self.__power_iters,
-                                                 extra_samples=self.__extra_samples)
-        elif self.__topic == 'lda':
-            self.__topic_model = models.LdaModel(corpus=self.__corpus, num_topics=self._dim, id2word=self.__id2word,
-                                                 chunksize=self.__chunksize, update_every=1, passes=self.__passes,
-                                                 dtype=np.float64)
+        if self._topic == 'lsi':
+            self._topic_model = models.LsiModel(corpus=self._corpus, num_topics=self._topic_n,
+                                                id2word=self._id2word, chunksize=self._chunksize,
+                                                power_iters=self._power_iters, extra_samples=self._extra_samples)
+        elif self._topic == 'lda':
+            self._topic_model = models.LdaModel(corpus=self._corpus, num_topics=self._topic_n,
+                                                id2word=self._id2word, chunksize=self._chunksize,
+                                                update_every=1, passes=self._passes, dtype=np.float64)
         else:
-            raise ValueError(self.__topic)
-        vecs = self.__topic_model[self.__corpus]
+            raise ValueError(self._topic)
+        vecs = self._topic_model[self._corpus]
         pure_vecs = []
         for vec in vecs:
-            if len(vec) != self._dim:
-                pure_vecs.append(_rebuild_vector(vec, self._dim))
+            if len(vec) != self._topic_n:
+                pure_vecs.append(_rebuild_vector(vec, self._topic_n))
             else:
                 pure_vecs.append([v for (index, v) in vec])
-        return pd.DataFrame({'item_id': self._item_vector['item_id'], 'vec': pure_vecs})
+        return pd.DataFrame({'item_id': self._item_ids, 'vec': pure_vecs})
 
     def to_dict(self):
         """
         See :meth:`BaseAlgo.to_dict <base_algo.BaseAlgo.to_dict>` for more details.
         """
-        s = super().to_dict()
-        res = {'type': self.__topic, 'topic_num': s['dimension'], 'chunksize': self.__chunksize}
-        if self.__topic == 'lsi':
-            res['power_iters'] = self.__power_iters
-            res['extra_samples'] = self.__extra_samples
+        res = {'type': self._topic, 'topic_num': self._topic_n, 'chunksize': self._chunksize}
+        if self._topic == 'lsi':
+            res['power_iters'] = self._power_iters
+            res['extra_samples'] = self._extra_samples
         else:
-            res['passes'] = self.__passes
+            res['passes'] = self._passes
         return res
 
 

@@ -76,5 +76,5 @@ class SurpriseBaseAlgo(BaseAlgo):
             ignore = ['_surprise_model']
         else:
             ignore = args[0].append('_surprise_model')
-        super().save(fname, ignore)
         dump.dump(fname + '.surprise', algo=self._surprise_model)
+        super().save(fname, ignore)

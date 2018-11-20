@@ -7,3 +7,4 @@ knn.py
 **/__pycache__/**
 data.txt
 .idea
+models/

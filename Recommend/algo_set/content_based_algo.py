@@ -2,6 +2,8 @@ from Recommend.algo_set.base_algo import BaseAlgo
 import numpy as np
 import pandas as pd
 import faiss
+import multiprocessing as mp
+from multiprocessing import cpu_count
 
 
 class ContentBasedAlgo(BaseAlgo):
@@ -13,20 +15,21 @@ class ContentBasedAlgo(BaseAlgo):
     def __init__(self, item_vector, dimension):
         """
         :param item_vector: Should be a pd.DataFrame contains item_id and its' vectors
-        :param dimension: Vector's dimensions. Cause item vectors are usually TF-IDF vectors which may have different dimensions among them, sub-class should at least handle this situation and make all the vectors be in same dimensions by implementing method _item_vector_process()
+        :param dimension: Vector's dimensions. Cause item vectors are usually TF-IDF vectors which may have different \
+        dimensions among them, sub-class should at least handle this situation and make all the vectors be in same \
+        dimensions.
         """
         super().__init__()
         self._dim = dimension
         self._item_vector = pd.DataFrame(item_vector)
         self._item_vector.columns = ['item_id', 'vec']
-        self._item_vector = self._item_vector_process(self._item_vector)
         self._retrieval_model = self._generate_retrieval_model()
         self._user_vector = {}
         self._user_log = None
 
     def train(self, train_set):
         """
-        Calculate user model for every user.
+        Calculate user model for every user. Use multi-process to speed up the training.
 
         See :meth:`BaseAlog.train <base_algo.BaseAlgo.train>` for more details.
         """
@@ -66,7 +69,7 @@ class ContentBasedAlgo(BaseAlgo):
         """
         res = super(ContentBasedAlgo, cls).load(fname)
         assert (hasattr(res, '_retrieval_model')), 'Not a standard ContentBasedAlgo class.'
-        res._retrieval_model = res._generate_retrieval_model()
+        setattr(res, '_retrieval_model', faiss.read_index(fname + ".retrieval"))
         return res
 
     def save(self, fname, ignore=None):
@@ -75,7 +78,8 @@ class ContentBasedAlgo(BaseAlgo):
         """
         if ignore is None:
             ignore = []
-        ignore = ignore.append('_retrieval_model')
+        ignore.append('_retrieval_model')
+        faiss.write_index(self._retrieval_model, fname + ".retrieval")
         super().save(fname, ignore)
 
     def _generate_retrieval_model(self):
@@ -93,10 +97,10 @@ class ContentBasedAlgo(BaseAlgo):
 
     def _build_user_model(self, user_id):
         """
-        This method builds vector model for a user.
+        This method will calculate user model for all users in user_ids.
 
-        :param user_id: user id
-        :return: user's vector model in numpy.array type.
+        :param user_ids: users' id list
+        :return: A dict contains user's id and vector.
         """
         specific_user_log = self._user_log[self._user_log['user_id'] == user_id]
         specific_user_log.drop_duplicates(inplace=True)
@@ -106,19 +110,8 @@ class ContentBasedAlgo(BaseAlgo):
         return _calc_dim_average(np.array(log_vecs['vec'].values.tolist()))
         # return vecs.sum(axis=0) / vecs.shape[0]
 
-    def _item_vector_process(self, item_vector):
-        """
-        Cause item vectors are usually TF-IDF vectors which may have different dimensions among them,
-        sub-class should at least handle this situation and make all the vectors be in same
-        dimensions by implementing method _item_vector_process()
-
-        :param item_vector: A pd.DataFrame contains items id and its' vector
-        :return: A pd.DataFrame of items' id and its' processed vectors
-        """
-        pass
-
     def to_dict(self):
-        return {'dimension': self._dim}
+        pass
 
 
 def _calc_dim_average(vectors_array):
