@@ -150,7 +150,7 @@ def _calc_dim_average(vectors_array):
     """
     array = np.array(vectors_array)
     threshold = 0.001
-    res = array.sum(axis=0)
+    res = array.sum(axis=0, dtype='float32')
     valid_count = (array > threshold).sum(axis=0)
     valid_count[valid_count == 0] = 1
     res /= valid_count
@@ -159,6 +159,8 @@ def _calc_dim_average(vectors_array):
 
 def _vector_normalize(vectors_array):
     vector_len_list = np.sqrt((vectors_array ** 2).sum(axis=1, keepdims=True))
+    # handle all-zero vectors
+    vector_len_list[vector_len_list == 0] = 1
     res = vectors_array / vector_len_list
     return res
 

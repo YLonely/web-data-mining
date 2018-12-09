@@ -1,4 +1,3 @@
-from sklearn.model_selection import KFold
 from Recommend.algo_set.base_algo import BaseAlgo
 import pandas as pd
 import json
@@ -17,54 +16,39 @@ class Evaluator:
         :param data_set: User view log.
         """
         self.__data_set = pd.DataFrame(data_set)
-        self.__data_set.columns = ['user_id', 'item_id']
+        self.__data_set.columns = ['user_id', 'item_id', 'view_time']
+        self.__data_set['view_time'] = pd.to_datetime(self.__data_set['view_time'])
         self.__data_set.drop_duplicates(inplace=True)
 
-    def evaluate(self, algo=BaseAlgo(), k=1, n_splits=2, shuffle=False, random_state=None, n_jobs=1, debug=False,
-                 verbose=False, auto_log=False):
+    def evaluate(self, algo=BaseAlgo(), k=1, n_jobs=1, split_date='2000-1-1', debug=False, verbose=False,
+                 auto_log=False):
         """
         :param algo: recommend algorithm
         :param k: recommend top-k items
-        :param n_splits: means n-flod evaluation
-        :param shuffle: Whether to shuffle the data before splitting into batches.
-        :param random_state: random seed
         :param n_jobs: The maximum number of evaluating in parallel. Use multi-thread to speed up the evaluating.
+        :param split_date: on which date we split the log data into train and test.
         :param debug: if true, the evaluator will use 5000 instances in data set to run the test.
-        :param verbose: whether to print recall and precision value in every test round.
+        :param verbose: whether to print the total time that evaluation cost.
         :param auto_log: if true, Evaluator will automatically save performance data to './performance.log'
         :return: average recall and precision
         """
         assert (n_jobs > 0), 'n_jobs must be greater than 0.'
-        kf = KFold(n_splits=n_splits, shuffle=shuffle, random_state=random_state)
-        recall_log = []
-        precision_log = []
         if debug:
             data_set = self.__data_set[:5000]
         else:
             data_set = self.__data_set
-        i = 1
+        train_set = data_set[data_set['view_time'] < split_date][['user_id', 'item_id']]
+        test_set = data_set[data_set['view_time'] >= split_date][['user_id', 'item_id']]
         start_time = time.time()
-        for train, test in kf.split(data_set):
-            train_set = data_set.iloc[train, :]
-            test_set = data_set.iloc[test, :]
-            # print("training.", flush=True)
-            algo.train(train_set)
-            # print("training over.", flush=True)
-            recall, precision = _job_dispatch(algo, k, train_set, test_set, n_jobs)
-            if verbose:
-                print("Round %d finish. Recall: %.3f%% Precision: %.3f%%" % (i, 100 * recall, 100 * precision))
-                i = i + 1
-            recall_log.append(recall)
-            precision_log.append(precision)
+        algo.train(train_set)
+        recall, precision = _job_dispatch(algo, k, train_set, test_set, n_jobs)
         end_time = time.time()
         if verbose:
             print("Totally cost: %.1f(s)" % (end_time - start_time))
-        rec = sum(recall_log) / len(recall_log)
-        pre = sum(precision_log) / len(precision_log)
         if auto_log:
-            _log_to_file(algo.to_dict(), recall=rec, precision=pre, shuffle=shuffle, random_state=random_state,
-                         time_cost=end_time - start_time, debug=debug)
-        return rec, pre
+            _log_to_file(algo.to_dict(), recall=recall, precision=precision, time_cost=end_time - start_time,
+                         debug=debug)
+        return recall, precision
 
 
 def _log_to_file(algo_dict, **kwargs):

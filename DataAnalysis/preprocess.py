@@ -55,7 +55,7 @@ class PreProcessor:
         short_ids = []
         useful_ids = []
         res = []
-        threshold = 2
+        threshold = 0
         for i in range(newsid_content.shape[0]):
             news_id = newsid_content.loc[i, 'news_id']
             content = newsid_content.loc[i, 'content']
@@ -87,7 +87,8 @@ class PreProcessor:
         """
         data = pd.read_csv(filepath_or_buffer=self.__original_data_path, sep="\\t", names=[
             'user_id', 'news_id', 'view_time', 'title', 'content', 'publish_time'], encoding="utf-8")
-        userid_newsid = data[['user_id', 'news_id']]
+        userid_newsid = data[['user_id', 'news_id', 'view_time']]
+        userid_newsid['view_time'] = pd.to_datetime(userid_newsid['view_time'], unit='s')
         userid_newsid = userid_newsid.drop_duplicates().reset_index(drop=True)
         userid_newsid = userid_newsid[~userid_newsid['news_id'].isin(news_to_avoid)]
         if auto_save:

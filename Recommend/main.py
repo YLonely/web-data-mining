@@ -16,8 +16,7 @@ lsi = TopicBasedAlgo(news_tfvec['news_id'], topic_n=150, corpus=corpus_tfidf, id
                      topic_type='lsi')
 cb = CollaborateBasedAlgo('cosine', False, 10)
 eva = Evaluator(user_log)
-print(eva.evaluate(algo=BaseLineAlgo(), k=10, n_splits=3, shuffle=True, random_state=0, n_jobs=3, debug=True,
-                   verbose=True, auto_log=True))
-print(eva.evaluate(algo=lsi, k=10, n_splits=3, shuffle=True, random_state=112, n_jobs=4, debug=False, verbose=True,
-                   auto_log=True))
-print(eva.evaluate(algo=cb, k=10, n_splits=3, n_jobs=4, shuffle=True, random_state=112, debug=True, verbose=True))
+print(
+    eva.evaluate(algo=BaseLineAlgo(), k=5, n_jobs=3, split_date='2014-3-21', debug=False, verbose=True, auto_log=True))
+print(eva.evaluate(algo=lsi, k=25, n_jobs=4, split_date='2014-3-21', debug=False, verbose=True, auto_log=True))
+print(eva.evaluate(algo=cb, k=10, split_date='2014-3-21', debug=False, verbose=True))
