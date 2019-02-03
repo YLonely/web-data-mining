@@ -1,22 +1,33 @@
-from Recommend.algo_set.baseline import BaseLineAlgo
-from Recommend.algo_set.collaborate_based_algo import CollaborateBasedAlgo
-from Recommend.algo_set.topic_based_algo import TopicBasedAlgo
+from Recommend.prediction_algorithms.baseline import BaseLineAlgo
+from Recommend.prediction_algorithms.collaborate_based_algo import CollaborateBasedAlgo
+from Recommend.prediction_algorithms.topic_based_algo import TopicBasedAlgo
+from Recommend.prediction_algorithms.nmf import NMF
 from Recommend.utils import Evaluator
 from gensim import corpora
 import pandas as pd
 import pickle as pic
 
 data_path = "../DataAnalysis/generate_datas/"
-with open(data_path + 'corpus_tfidf.pdata', 'rb') as f:
-    corpus_tfidf = pic.load(f)
-word_dict = corpora.Dictionary.load(data_path + 'word_dict.dict')
-news_tfvec = pd.read_csv(data_path + 'newsid_tfvec.csv')
+id_content = pd.read_csv(data_path + "newsid_content.csv")
 user_log = pd.read_csv(data_path + 'userid_newsid.csv')
-lsi = TopicBasedAlgo(news_tfvec['news_id'], topic_n=150, corpus=corpus_tfidf, id2word=word_dict, chunksize=400,
-                     topic_type='lsi')
-cb = CollaborateBasedAlgo('cosine', False, 10)
+k_list = [15]
+n_jobs = 6
 eva = Evaluator(user_log)
-print(
-    eva.evaluate(algo=BaseLineAlgo(), k=5, n_jobs=3, split_date='2014-3-21', debug=False, verbose=True, auto_log=True))
-print(eva.evaluate(algo=lsi, k=25, n_jobs=4, split_date='2014-3-21', debug=False, verbose=True, auto_log=True))
-print(eva.evaluate(algo=cb, k=10, split_date='2014-3-21', debug=False, verbose=True))
+# initial_p = TopicBasedAlgo.preprocess(id_content)
+#
+# lda = TopicBasedAlgo(initial_params=initial_p, topic_n=100, topic_type='lsi', chunksize=1000)
+# lda.save('./tmp/lda_model')
+ll = TopicBasedAlgo.load('./tmp/lda_model')
+eva.evaluate(algo=ll, k=k_list, n_jobs=n_jobs, split_date='2014-3-21', auto_log=True, debug=True)
+#
+# for factor in [10, 15, 20]:
+#     nmf = NMF(n_factors=factor, random_state=112)
+#     eva.evaluate(algo=nmf, k=k_list, n_jobs=n_jobs, split_date='2014-3-21', auto_log=True)
+#
+# for k_neighbor in [5, 10, 15, 20]:
+#     cb = CollaborateBasedAlgo(user_based=True, k=k_neighbor)
+#     eva.evaluate(algo=cb, k=k_list, n_jobs=n_jobs, split_date='2014-3-21', auto_log=True)
+#
+# for k_neighbor in [15]:
+#     cb = CollaborateBasedAlgo(user_based=False, k=k_neighbor, sim_func='pearson')
+#     eva.evaluate(algo=cb, k=k_list, n_jobs=6, split_date='2014-3-21', auto_log=True, debug=False)

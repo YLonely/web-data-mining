@@ -1,4 +1,4 @@
-from Recommend.algo_set.base_algo import BaseAlgo
+from Recommend.prediction_algorithms.base_algo import BaseAlgo
 import numpy as np
 import pandas as pd
 import faiss
@@ -8,19 +8,16 @@ from multiprocessing import cpu_count
 
 class ContentBasedAlgo(BaseAlgo):
     """
-    Do not use this class directly.
-    The base class of content-based algorithms
+    Content-based prediction algorithm
     """
 
     def __init__(self, item_vector, dimension):
         """
-        :param item_vector: Should be a pd.DataFrame contains item_id and its' vectors
-        :param dimension: Vector's dimensions. Cause item vectors are usually TF-IDF vectors which may have different \
-        dimensions among them, sub-class should at least handle this situation and make all the vectors be in same \
-        dimensions.
+        :param item_vector: Should be a pd.DataFrame contains item_id(integer) and its vector([float]) | id | vector |
+        :param dimension: Vector's dimensions.
         """
         super().__init__()
-        self._dim = dimension
+        self._dimension = dimension
         self._item_vector = pd.DataFrame(item_vector)
         self._item_vector.columns = ['item_id', 'vec']
         self._retrieval_model = self._generate_retrieval_model()
@@ -80,13 +77,14 @@ class ContentBasedAlgo(BaseAlgo):
         viewed_num = specific_user_log.shape[0]
         assert (viewed_num != 0), "User id doesn't exist."
         specific_user_vec = self._user_vector[u_id]
-        normal_specific_user_vec = _vector_normalize(np.array([specific_user_vec]).astype('float32'))
+        normal_specific_user_vec = ContentBasedAlgo._vector_normalize(np.array([specific_user_vec]).astype('float32'))
         ''' k+viewed_num make sure that we have at least k unseen items '''
         distance, index = self._retrieval_model.search(normal_specific_user_vec, k + viewed_num)
         item_res = self._item_vector.loc[index[0]]
         res = pd.DataFrame({'dis': distance[0], 'item_id': item_res['item_id']})
         res = res[~res['item_id'].isin(specific_user_log['item_id'])]
         res = res[:k]
+        ''' return top-k smallest cosine distance and the ids of the items which hold that distance. '''
         return res['dis'].values.tolist(), res['item_id'].values.tolist()
 
     @classmethod
@@ -111,14 +109,14 @@ class ContentBasedAlgo(BaseAlgo):
 
     def _generate_retrieval_model(self):
         """
-        Use some retrieval model(faiss) to speed up the vector indexing
+        Use the retrieval model(faiss) to speed up the vector indexing
 
         :return: Ready-to-work retrieval model from faiss
         """
         real_vecs = self._item_vector['vec'].values.tolist()
         item_vector_array = np.array(real_vecs)
-        item_vector_array = _vector_normalize(item_vector_array.astype('float32'))
-        retrieval_model = faiss.IndexFlatIP(self._dim)
+        item_vector_array = ContentBasedAlgo._vector_normalize(item_vector_array.astype('float32'))
+        retrieval_model = faiss.IndexFlatIP(self._dimension)
         retrieval_model.add(item_vector_array)
         return retrieval_model
 
@@ -134,55 +132,32 @@ class ContentBasedAlgo(BaseAlgo):
             specific_user_log = self._user_log[self._user_log['user_id'] == user_id]
             log_vecs = pd.merge(specific_user_log, self._item_vector, how='left', on=['item_id'])
             assert (sum(log_vecs['vec'].notnull()) == log_vecs.shape[0]), 'Item vector sheet has null values'
-            res_dict[user_id] = _calc_dim_average(np.array(log_vecs['vec'].values.tolist()))
+            res_dict[user_id] = ContentBasedAlgo._calc_dim_average(np.array(log_vecs['vec'].values.tolist()))
         return res_dict
 
     def to_dict(self):
         pass
 
+    @staticmethod
+    def _calc_dim_average(vectors_array):
+        """
+        This func calculate the average value on every dimension of vectors_array, but it only count none-zero values.
 
-def _calc_dim_average(vectors_array):
-    """
-    This func calculate the average value on every dimension of vectors_array, but it only count none-zero values.
+        :param vectors_array: np.array contains a list of vectors.
+        :return: A vector has the average value in every dimension.
+        """
+        array = np.array(vectors_array)
+        threshold = 0.001
+        res = array.sum(axis=0, dtype='float32')
+        valid_count = (array > threshold).sum(axis=0)
+        valid_count[valid_count == 0] = 1
+        res /= valid_count
+        return res
 
-    :param vectors_array: np.array contains a list of vectors.
-    :return: A vector has the average value in every dimension.
-    """
-    array = np.array(vectors_array)
-    threshold = 0.001
-    res = array.sum(axis=0, dtype='float32')
-    valid_count = (array > threshold).sum(axis=0)
-    valid_count[valid_count == 0] = 1
-    res /= valid_count
-    return res
-
-
-def _vector_normalize(vectors_array):
-    vector_len_list = np.sqrt((vectors_array ** 2).sum(axis=1, keepdims=True))
-    # handle all-zero vectors
-    vector_len_list[vector_len_list == 0] = 1
-    res = vectors_array / vector_len_list
-    return res
-
-# def _calc_cos_dis_median(vectors_array):  # np.array
-#     """
-#     Like the geometric median calculation,but use a different distance function.
-#     This func find a median in the vector space that have the smallest sum of distance
-#     among other vectors in vectors_array. it uses cosine value to indicate distance
-#
-#     :param vectors_array: np.array contains a list of vectors.
-#     :return: A vector represents the distance median.
-#     """
-#     # normalization
-#     normal_vectors_array = _vector_normalize(vectors_array)
-#     sqrt_sum = np.sqrt(((normal_vectors_array.sum(axis=0)) ** 2).sum())
-#     part_sum = normal_vectors_array.sum(axis=0)
-#     x1 = part_sum / sqrt_sum
-#     x2 = -x1
-#     distance_sum1 = (normal_vectors_array * x1).sum()
-#     distance_sum2 = (normal_vectors_array * x2).sum()
-#     if distance_sum1 > distance_sum2:
-#         res = x1
-#     else:
-#         res = x2
-#     return res
+    @staticmethod
+    def _vector_normalize(vectors_array):
+        vector_len_list = np.sqrt((vectors_array ** 2).sum(axis=1, keepdims=True))
+        # handle all-zero vectors
+        vector_len_list[vector_len_list == 0] = 1
+        res = vectors_array / vector_len_list
+        return res

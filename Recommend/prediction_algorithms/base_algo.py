@@ -8,17 +8,14 @@ class BaseAlgo:
     """
 
     def __init__(self):
-        """
-        Algorithm should do some train-set-independent work here
-        For example: generate retrieval model or generate user vector model.
-        """
         pass
 
     def train(self, train_set):
         """
         Do some train-set-dependent work here: for example calculate sims between users or items
 
-        :param train_set: most of the time it is a data sheet contains two attributes: user_id and item_id,which represents the user view record during a period of time.
+        :param train_set: A pandas.DataFrame contains two attributes: user_id and item_id,which \
+        represents the user view record during a period of time.
         :return: return a model that is ready to give recommend
         """
         raise NotImplementedError()
@@ -29,7 +26,8 @@ class BaseAlgo:
 
         :param u_id: users' identity (user's id)
         :param k: the number of the items that the recommender should return
-        :return: (v,id) v is a list contains predict rate or distance, id is a list contains top-k highest rated or nearest items
+        :return: (v,id) v is a list contains predict rate or distance, id is a list contains top-k highest rated or \
+        nearest items
         """
         raise NotImplementedError()
 
@@ -58,7 +56,8 @@ class BaseAlgo:
         Save an object to a file.
 
         :param fname: file path
-        :param ignore: a set of attributes that should't be saved by super class, but subclass may have to handle these special attributes.
+        :param ignore: a set of attributes that should't be saved by super class, but subclass may have to handle \
+        these special attributes.
         """
         if ignore is not None:
             for attr in ignore:

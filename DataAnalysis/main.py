@@ -1,5 +1,5 @@
 # coding=utf-8
-from DataAnalysis.preprocess import PreProcessor
+from Recommend.preprocess.preprocess import PreProcessor
 from DataAnalysis.tf_idf_build import TfIdfGenerator
 
 original_data_path = './datas/'

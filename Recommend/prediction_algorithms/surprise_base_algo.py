@@ -1,5 +1,5 @@
 from surprise import Dataset, Reader, dump
-from Recommend.algo_set.base_algo import BaseAlgo
+from Recommend.prediction_algorithms.base_algo import BaseAlgo
 import pandas as pd
 
 
@@ -14,14 +14,17 @@ class SurpriseBaseAlgo(BaseAlgo):
     def __init__(self):
         super().__init__()
         self._user_log = None
-        self._surprise_model = self._init_surprise_model()
+        self._surprise_model = None
 
     def train(self, train_set):
+        if self._surprise_model is None:
+            self._surprise_model = self._init_surprise_model()  # Initialize prediction model
         self._user_log = pd.DataFrame(train_set)
         self._user_log.columns = ['user_id', 'item_id']
         ''' Cause there is no rate in this situation, so just simply set rate to 1'''
-        rate_log = self._user_log
-        rate_log['rate'] = 1  # will change the self._user_log
+        rate_log = self._user_log.copy()
+        rate_log = rate_log.drop_duplicates()
+        rate_log['rate'] = 1
         reader = Reader(rating_scale=(0, 1))
         train_s = Dataset.load_from_df(rate_log, reader)
         ''' train surprise-framework based model '''
@@ -30,11 +33,11 @@ class SurpriseBaseAlgo(BaseAlgo):
 
     def _init_surprise_model(self):
         """
-        Sub-class should implement this method which return a surprise-based recommend model.
+        Sub-class should implement this method which return a prediction algorithm from package 'Surprise'.
 
         :return: A surprise-based recommend model
         """
-        pass
+        raise NotImplementedError()
 
     def top_k_recommend(self, u_id, k):
         specific_user_log = self._user_log[self._user_log['user_id'] == u_id]
@@ -62,7 +65,7 @@ class SurpriseBaseAlgo(BaseAlgo):
         return est
 
     def to_dict(self):
-        pass
+        raise NotImplementedError()
 
     @classmethod
     def load(cls, fname):
