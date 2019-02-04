@@ -12,11 +12,13 @@ setup(
     packages=find_packages(),
     data_files=[('ucas_dm/preprocess/stop_words',
                  ['ucas_dm/preprocess/stop_words/stop.txt'])],
+    platforms=['MacOS', 'Linux'],
     classifiers=[
         'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: MIT License',
-        'Programming Language :: Python :: 3 :: Only'
+        'Programming Language :: Python :: 3 :: Only',
+        'Topic :: Scientific/Engineering :: Information Analysis'
     ],
     install_requires=['pandas',
                       'numpy',
