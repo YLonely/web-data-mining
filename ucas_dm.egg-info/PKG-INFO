@@ -1,0 +1,14 @@
+Metadata-Version: 1.1
+Name: ucas-dm
+Version: 1.0.0
+Summary: ucas_dm is a simple library provides some recommend algorithms for UCAS's web data mining homework project
+Home-page: https://github.com/YLonely/web-data-mining
+Author: YLonely
+Author-email: loneybw@gmail.com
+License: UNKNOWN
+Description: UNKNOWN
+Platform: UNKNOWN
+Classifier: Development Status :: 4 - Beta
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Programming Language :: Python :: 3 :: Only
