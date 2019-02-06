@@ -29,8 +29,6 @@
         项目包名为ucas_dm，其中包含了prediction_algorithms包，preprocess包以及一个utils模块，prediction_algorithms包中
 包含了多个可用的推荐算法，例如使用话题模型的基于内容推荐，协同过滤算法，以及矩阵分解算法等，utils模块中包含了用于对算法推荐性能进行评测的类。
 
-.. image:: ../build/html/img/Recall.png
-.. image:: ../build/html/img/Precision.png
 
 结构
 ^^^^^^^^^^^^^^^^^^^^^
