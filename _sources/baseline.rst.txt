@@ -1,0 +1,8 @@
+baseline.py
+===============
+
+.. automodule:: ucas_dm.prediction_algorithms.baseline
+    :members:
+    :special-members:
+    :private-members:
+    :show-inheritance:

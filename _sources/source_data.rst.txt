@@ -1,0 +1,11 @@
+source\_data文件夹
+=========================
+说明
+----------------------
+该文件夹包含如下文件：
+
+1.  **newsid_content.csv**
+        使用preprocess包中的PreProcessor.extract_news从原始数据中抽取出的新闻id与其内容的表。
+
+2.  **userid_newsid.csv**
+        使用preprocess包中的PreProcessor.extract_view_log从原始数据中抽取出的用户浏览历史数据，只有用户id与新闻id。

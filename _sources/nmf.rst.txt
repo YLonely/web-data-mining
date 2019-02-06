@@ -1,0 +1,8 @@
+nmf.py
+===============================
+
+.. automodule:: ucas_dm.prediction_algorithms.nmf
+    :members:
+    :special-members: __init__
+    :show-inheritance:
+    :private-members:

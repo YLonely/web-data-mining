@@ -1,0 +1,9 @@
+content\_based\_algo.py
+===========================
+
+.. automodule:: ucas_dm.prediction_algorithms.content_based_algo
+    :members:
+    :special-members: __init__
+    :private-members:
+    :undoc-members:
+    :show-inheritance:

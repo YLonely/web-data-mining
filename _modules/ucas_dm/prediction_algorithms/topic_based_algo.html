@@ -1,0 +1,244 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>ucas_dm.prediction_algorithms.topic_based_algo &#8212; WebDataMining  documentation</title>
+    <link rel="stylesheet" href="../../../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">WebDataMining  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for ucas_dm.prediction_algorithms.topic_based_algo</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">.content_based_algo</span> <span class="k">import</span> <span class="n">ContentBasedAlgo</span>
+<span class="kn">from</span> <span class="nn">.base_algo</span> <span class="k">import</span> <span class="n">BaseAlgo</span>
+<span class="kn">from</span> <span class="nn">..preprocess</span> <span class="k">import</span> <span class="n">PreProcessor</span>
+<span class="kn">from</span> <span class="nn">gensim</span> <span class="k">import</span> <span class="n">models</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pickle</span> <span class="k">as</span> <span class="nn">pic</span>
+
+
+<div class="viewcode-block" id="InitialParams"><a class="viewcode-back" href="../../../topic_based_algo.html#ucas_dm.prediction_algorithms.topic_based_algo.InitialParams">[docs]</a><span class="k">class</span> <span class="nc">InitialParams</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This class contains some necessary data for the initialization of class TopicBasedAlgo.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="InitialParams.__init__"><a class="viewcode-back" href="../../../topic_based_algo.html#ucas_dm.prediction_algorithms.topic_based_algo.InitialParams.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ids</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;ids&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">id2word</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;id2word&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">corpus</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;corpus&#39;</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="InitialParams.save"><a class="viewcode-back" href="../../../topic_based_algo.html#ucas_dm.prediction_algorithms.topic_based_algo.InitialParams.save">[docs]</a>    <span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fname</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This method save initial params to a file</span>
+
+<span class="sd">        :param fname: file path</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">pic</span><span class="o">.</span><span class="n">dump</span><span class="p">({</span><span class="s2">&quot;ids&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">ids</span><span class="p">,</span> <span class="s2">&quot;id2word&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">id2word</span><span class="p">,</span> <span class="s2">&quot;corpus&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">corpus</span><span class="p">},</span> <span class="n">f</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="InitialParams.load"><a class="viewcode-back" href="../../../topic_based_algo.html#ucas_dm.prediction_algorithms.topic_based_algo.InitialParams.load">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">load</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">fname</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Load an object previously saved from a file</span>
+
+<span class="sd">        :param fname: file path</span>
+
+<span class="sd">        :return: object loaded from file</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">obj</span> <span class="o">=</span> <span class="n">pic</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">InitialParams</span><span class="p">(</span><span class="n">ids</span><span class="o">=</span><span class="n">obj</span><span class="p">[</span><span class="s1">&#39;ids&#39;</span><span class="p">],</span> <span class="n">id2word</span><span class="o">=</span><span class="n">obj</span><span class="p">[</span><span class="s1">&#39;id2word&#39;</span><span class="p">],</span> <span class="n">corpus</span><span class="o">=</span><span class="n">obj</span><span class="p">[</span><span class="s1">&#39;corpus&#39;</span><span class="p">])</span></div></div>
+
+
+<div class="viewcode-block" id="TopicBasedAlgo"><a class="viewcode-back" href="../../../topic_based_algo.html#ucas_dm.prediction_algorithms.topic_based_algo.TopicBasedAlgo">[docs]</a><span class="k">class</span> <span class="nc">TopicBasedAlgo</span><span class="p">(</span><span class="n">BaseAlgo</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Content-based algorithm which use &quot;Topic model&quot; algorithms (LSI or LDA).</span>
+<span class="sd">    Use delegation strategy</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="TopicBasedAlgo.__init__"><a class="viewcode-back" href="../../../topic_based_algo.html#ucas_dm.prediction_algorithms.topic_based_algo.TopicBasedAlgo.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">initial_params</span><span class="p">,</span> <span class="n">topic_n</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">chunksize</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">topic_type</span><span class="o">=</span><span class="s1">&#39;lda&#39;</span><span class="p">,</span> <span class="n">power_iters</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+                 <span class="n">extra_samples</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">passes</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param initial_params: An instance of InitialParams generated by :meth:`preprocess \</span>
+<span class="sd">        &lt;topic_based_algo.TopicBasedAlgo.preprocess&gt;`</span>
+<span class="sd">        :param topic_n: The number of requested latent topics to be extracted from the training corpus.</span>
+<span class="sd">        :param chunksize: Number of documents to be used in each training chunk.</span>
+<span class="sd">        :param topic_type: &#39;lsi&#39; or &#39;lda&#39;</span>
+<span class="sd">        :param power_iters: (**LSI parameter**)Number of power iteration steps to be used. Increasing the number \</span>
+<span class="sd">        of power iterations improves accuracy, but lowers performance.</span>
+<span class="sd">        :param extra_samples: (**LSI parameter**)Extra samples to be used besides the rank k. Can improve accuracy.</span>
+<span class="sd">        :param passes: (**LDA parameter**)Number of passes through the corpus during training.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_item_ids</span> <span class="o">=</span> <span class="n">initial_params</span><span class="o">.</span><span class="n">ids</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_id2word</span> <span class="o">=</span> <span class="n">initial_params</span><span class="o">.</span><span class="n">id2word</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_corpus</span> <span class="o">=</span> <span class="n">initial_params</span><span class="o">.</span><span class="n">corpus</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_topic_n</span> <span class="o">=</span> <span class="n">topic_n</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_topic</span> <span class="o">=</span> <span class="n">topic_type</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_topic_model</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_chunksize</span> <span class="o">=</span> <span class="n">chunksize</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_power_iters</span> <span class="o">=</span> <span class="n">power_iters</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_extra_samples</span> <span class="o">=</span> <span class="n">extra_samples</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_passes</span> <span class="o">=</span> <span class="n">passes</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_content_algo</span> <span class="o">=</span> <span class="n">ContentBasedAlgo</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_generate_item_vector</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">_topic_n</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TopicBasedAlgo.preprocess"><a class="viewcode-back" href="../../../topic_based_algo.html#ucas_dm.prediction_algorithms.topic_based_algo.TopicBasedAlgo.preprocess">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">preprocess</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">raw_data</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Call this method to process raw data which contain item id and its content before initializing TopicBasedAlgo \</span>
+<span class="sd">        instance.</span>
+
+<span class="sd">        :param raw_data: A pandas.DataFrame contains item id and content \| id \| content \|</span>
+
+<span class="sd">        :return: A :meth:`InitialParams &lt;topic_based_algo.InitialParams&gt;` instance, a necessary parameter in the \</span>
+<span class="sd">        initialization of TopicBasedAlgo.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">id_tokens</span> <span class="o">=</span> <span class="n">PreProcessor</span><span class="o">.</span><span class="n">generate_tokens</span><span class="p">(</span><span class="n">raw_data</span><span class="p">)</span>
+        <span class="n">tf_res</span> <span class="o">=</span> <span class="n">PreProcessor</span><span class="o">.</span><span class="n">build_tf_idf</span><span class="p">(</span><span class="n">id_tokens</span><span class="p">)</span>
+        <span class="n">raw_data</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">,</span> <span class="s1">&#39;content&#39;</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">InitialParams</span><span class="p">(</span><span class="n">ids</span><span class="o">=</span><span class="n">raw_data</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span> <span class="n">id2word</span><span class="o">=</span><span class="n">tf_res</span><span class="p">[</span><span class="s1">&#39;gensim_pack&#39;</span><span class="p">][</span><span class="s1">&#39;id2word&#39;</span><span class="p">],</span>
+                             <span class="n">corpus</span><span class="o">=</span><span class="n">tf_res</span><span class="p">[</span><span class="s1">&#39;gensim_pack&#39;</span><span class="p">][</span><span class="s1">&#39;corpus&#39;</span><span class="p">])</span></div>
+
+<div class="viewcode-block" id="TopicBasedAlgo.train"><a class="viewcode-back" href="../../../topic_based_algo.html#ucas_dm.prediction_algorithms.topic_based_algo.TopicBasedAlgo.train">[docs]</a>    <span class="k">def</span> <span class="nf">train</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">train_set</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_content_algo</span><span class="o">.</span><span class="n">train</span><span class="p">(</span><span class="n">train_set</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+<div class="viewcode-block" id="TopicBasedAlgo.top_k_recommend"><a class="viewcode-back" href="../../../topic_based_algo.html#ucas_dm.prediction_algorithms.topic_based_algo.TopicBasedAlgo.top_k_recommend">[docs]</a>    <span class="k">def</span> <span class="nf">top_k_recommend</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">u_id</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_content_algo</span><span class="o">.</span><span class="n">top_k_recommend</span><span class="p">(</span><span class="n">u_id</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TopicBasedAlgo.load"><a class="viewcode-back" href="../../../topic_based_algo.html#ucas_dm.prediction_algorithms.topic_based_algo.TopicBasedAlgo.load">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">load</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">fname</span><span class="p">):</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">TopicBasedAlgo</span><span class="p">,</span> <span class="bp">cls</span><span class="p">)</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="p">(</span><span class="nb">hasattr</span><span class="p">(</span><span class="n">res</span><span class="p">,</span> <span class="s1">&#39;_topic&#39;</span><span class="p">)),</span> <span class="s1">&#39;Not a standard TopicBasedAlgo class.&#39;</span>
+        <span class="n">topic</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">res</span><span class="p">,</span> <span class="s1">&#39;_topic&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">topic</span> <span class="o">==</span> <span class="s1">&#39;lsi&#39;</span><span class="p">:</span>
+            <span class="n">model_fname</span> <span class="o">=</span> <span class="s1">&#39;.&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">fname</span><span class="p">,</span> <span class="s1">&#39;lsi&#39;</span><span class="p">])</span>
+            <span class="nb">setattr</span><span class="p">(</span><span class="n">res</span><span class="p">,</span> <span class="s1">&#39;_topic_model&#39;</span><span class="p">,</span> <span class="n">models</span><span class="o">.</span><span class="n">LsiModel</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">model_fname</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="n">topic</span> <span class="o">==</span> <span class="s1">&#39;lda&#39;</span><span class="p">:</span>
+            <span class="n">model_fname</span> <span class="o">=</span> <span class="s1">&#39;.&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">fname</span><span class="p">,</span> <span class="s1">&#39;lda&#39;</span><span class="p">])</span>
+            <span class="nb">setattr</span><span class="p">(</span><span class="n">res</span><span class="p">,</span> <span class="s1">&#39;_topic_model&#39;</span><span class="p">,</span> <span class="n">models</span><span class="o">.</span><span class="n">LdaModel</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">model_fname</span><span class="p">))</span>
+        <span class="nb">setattr</span><span class="p">(</span><span class="n">res</span><span class="p">,</span> <span class="s1">&#39;_content_algo&#39;</span><span class="p">,</span> <span class="n">ContentBasedAlgo</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">fname</span><span class="p">,</span> <span class="s1">&#39;content_base&#39;</span><span class="p">])))</span>
+        <span class="k">return</span> <span class="n">res</span></div>
+
+<div class="viewcode-block" id="TopicBasedAlgo.save"><a class="viewcode-back" href="../../../topic_based_algo.html#ucas_dm.prediction_algorithms.topic_based_algo.TopicBasedAlgo.save">[docs]</a>    <span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fname</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
+        <span class="n">ignore</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;_topic_model&#39;</span><span class="p">,</span> <span class="s1">&#39;_content_algo&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_topic_model</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_topic_model</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">fname</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_topic</span><span class="p">]))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_content_algo</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">fname</span><span class="p">,</span> <span class="s1">&#39;content_base&#39;</span><span class="p">]))</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">ignore</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TopicBasedAlgo._generate_item_vector"><a class="viewcode-back" href="../../../topic_based_algo.html#ucas_dm.prediction_algorithms.topic_based_algo.TopicBasedAlgo._generate_item_vector">[docs]</a>    <span class="k">def</span> <span class="nf">_generate_item_vector</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Use LDA or LSI algorithm to process TF-IDF vector and generate new item vectors.</span>
+
+<span class="sd">        :return: DataFrame contains item id and it&#39;s new vector</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_topic</span> <span class="o">==</span> <span class="s1">&#39;lsi&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_topic_model</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">LsiModel</span><span class="p">(</span><span class="n">corpus</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_corpus</span><span class="p">,</span> <span class="n">num_topics</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_topic_n</span><span class="p">,</span>
+                                                <span class="n">id2word</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_id2word</span><span class="p">,</span> <span class="n">chunksize</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_chunksize</span><span class="p">,</span>
+                                                <span class="n">power_iters</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_power_iters</span><span class="p">,</span> <span class="n">extra_samples</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_extra_samples</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_topic</span> <span class="o">==</span> <span class="s1">&#39;lda&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_topic_model</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">LdaModel</span><span class="p">(</span><span class="n">corpus</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_corpus</span><span class="p">,</span> <span class="n">num_topics</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_topic_n</span><span class="p">,</span>
+                                                <span class="n">id2word</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_id2word</span><span class="p">,</span> <span class="n">chunksize</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_chunksize</span><span class="p">,</span>
+                                                <span class="n">update_every</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">passes</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_passes</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_topic</span><span class="p">)</span>
+        <span class="n">vecs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_topic_model</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_corpus</span><span class="p">]</span>
+        <span class="n">pure_vecs</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">vec</span> <span class="ow">in</span> <span class="n">vecs</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">vec</span><span class="p">)</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_topic_n</span><span class="p">:</span>
+                <span class="n">pure_vecs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">TopicBasedAlgo</span><span class="o">.</span><span class="n">_rebuild_vector</span><span class="p">(</span><span class="n">vec</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_topic_n</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">pure_vecs</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">v</span> <span class="k">for</span> <span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="ow">in</span> <span class="n">vec</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s1">&#39;item_id&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_item_ids</span><span class="p">,</span> <span class="s1">&#39;vec&#39;</span><span class="p">:</span> <span class="n">pure_vecs</span><span class="p">})</span></div>
+
+<div class="viewcode-block" id="TopicBasedAlgo.to_dict"><a class="viewcode-back" href="../../../topic_based_algo.html#ucas_dm.prediction_algorithms.topic_based_algo.TopicBasedAlgo.to_dict">[docs]</a>    <span class="k">def</span> <span class="nf">to_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        See :meth:`BaseAlgo.to_dict &lt;base_algo.BaseAlgo.to_dict&gt;` for more details.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_topic</span><span class="p">,</span> <span class="s1">&#39;topic_num&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_topic_n</span><span class="p">,</span> <span class="s1">&#39;chunksize&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_chunksize</span><span class="p">}</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_topic</span> <span class="o">==</span> <span class="s1">&#39;lsi&#39;</span><span class="p">:</span>
+            <span class="n">res</span><span class="p">[</span><span class="s1">&#39;power_iters&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_power_iters</span>
+            <span class="n">res</span><span class="p">[</span><span class="s1">&#39;extra_samples&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_extra_samples</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">res</span><span class="p">[</span><span class="s1">&#39;passes&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_passes</span>
+        <span class="k">return</span> <span class="n">res</span></div>
+
+<div class="viewcode-block" id="TopicBasedAlgo._rebuild_vector"><a class="viewcode-back" href="../../../topic_based_algo.html#ucas_dm.prediction_algorithms.topic_based_algo.TopicBasedAlgo._rebuild_vector">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_rebuild_vector</span><span class="p">(</span><span class="n">partial_vector</span><span class="p">,</span> <span class="n">dim</span><span class="p">):</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">dim</span>
+        <span class="k">for</span> <span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span> <span class="ow">in</span> <span class="n">partial_vector</span><span class="p">:</span>
+            <span class="n">res</span><span class="p">[</span><span class="n">index</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="k">return</span> <span class="n">res</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">WebDataMining  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2018, Lw.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.2.
+    </div>
+  </body>
+</html>

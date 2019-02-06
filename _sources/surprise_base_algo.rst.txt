@@ -1,0 +1,8 @@
+surprise\_base\_algo.py
+===========================
+
+.. automodule:: ucas_dm.prediction_algorithms.surprise_base_algo
+    :members:
+    :private-members:
+    :undoc-members:
+    :show-inheritance:

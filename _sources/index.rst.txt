@@ -1,0 +1,52 @@
+.. WebDataMining documentation master file, created by
+   sphinx-quickstart on Wed Nov 14 19:46:17 2018.
+   You can adapt this file completely to your liking, but it should at least
+   contain the root `toctree` directive.
+
+网络数据挖掘项目文档
+==========================================================================
+`项目地址 <https://github.com/YLonely/web-data-mining>`_
+
+注意事项
+----------------
+本次项目使用的Python版本为3.6.5,推荐直接通过Anaconda进行安装，系统环境推荐使用基于*nix的系统，主要使用
+到的Python包如下(粗体表示需要额外安装，之后可能还会有更新)：
+
+    #. pandas
+    #. numpy
+    #. pickle
+    #. **gensim** `安装 <https://radimrehurek.com/gensim/>`_
+    #. **jieba** `安装 <https://github.com/fxsjy/jieba>`_
+    #. **faiss** `安装 <https://github.com/facebookresearch/faiss>`_
+    #. **surprise** `安装 <https://github.com/NicolasHug/Surprise>`_
+
+
+
+项目结构
+-------------------
+说明
+^^^^^^^^^^^^^^^^^^^
+        项目包名为ucas_dm，其中包含了prediction_algorithms包，preprocess包以及一个utils模块，prediction_algorithms包中
+包含了多个可用的推荐算法，例如使用话题模型的基于内容推荐，协同过滤算法，以及矩阵分解算法等，utils模块中包含了用于对算法推荐性能进行评测的类。
+
+.. image:: ../build/html/img/Recall.png
+.. image:: ../build/html/img/Precision.png
+
+结构
+^^^^^^^^^^^^^^^^^^^^^
+    * web-data-mining
+        * source_data
+            * `source\_data <source_data.html>`_
+        * ucas_dm
+            * prediction_algorithms
+                * `base\_algo.py <base_algo.html>`_
+                * `baseline.py <baseline.html>`_
+                * `collaborate\_based\_algo.py <collaborate_based_algo.html>`_
+                * `content\_based\_algo.py <content_based_algo.html>`_
+                * `nmf.py <nmf.html>`_
+                * `surprise\_base\_algo.py <surprise_base_algo.html>`_
+                * `topic\_based\_algo.py <topic_based_algo.html>`_
+            * preprocess
+                * `preprocess.py <preprocess.html>`_
+            * `utils.py <utils.html>`_
+
