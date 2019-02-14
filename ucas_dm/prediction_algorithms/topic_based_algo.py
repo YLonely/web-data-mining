@@ -20,6 +20,7 @@ class InitialParams:
     def save(self, fname):
         """
         This method save initial params to a file
+
         :param fname: file path
         """
         with open(fname, 'wb') as f:
@@ -29,7 +30,9 @@ class InitialParams:
     def load(cls, fname):
         """
         Load an object previously saved from a file
+
         :param fname: file path
+
         :return: object loaded from file
         """
         with open(fname, 'rb') as f:
@@ -74,7 +77,9 @@ class TopicBasedAlgo(BaseAlgo):
         """
         Call this method to process raw data which contain item id and its content before initializing TopicBasedAlgo \
         instance.
-        :param raw_data: A pandas.DataFrame contains item id and content | id | content |
+
+        :param raw_data: A pandas.DataFrame contains item id and content \| id \| content \|
+
         :return: A :meth:`InitialParams <topic_based_algo.InitialParams>` instance, a necessary parameter in the \
         initialization of TopicBasedAlgo.
         """

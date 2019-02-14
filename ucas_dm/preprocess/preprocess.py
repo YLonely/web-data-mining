@@ -33,7 +33,7 @@ class PreProcessor:
         This method generate tokens for news.
 
         :param id_content: A pandas.DataFrame of news id(integer) and its content(string)  \
-        |column1: news_id|column2: content|
+        \|column1: news_id\|column2: content\|
 
         :return: A pd.DataFrame of news id and its tokens
         """
@@ -68,9 +68,9 @@ class PreProcessor:
         """
         This method builds TF-IDF vectors for news.
 
-        :param id_tokens: A pandas.DataFrame contains news id and its tokens.  |column1: news_id|column2: tokens|
+        :param id_tokens: A pandas.DataFrame contains news id and its tokens.  \|column1: news_id\|column2: tokens\|
         :return: A dict - {"id_tfvec": A pandas.DataFrame contains news id and its tf-idf vector \
-        |column1: news_id|column2: tf_vec| ,"gensim_pack":{"word2dict": important parameter if package "gensim" is \
+        \|column1: news_id\|column2: tf_vec\| ,"gensim_pack":{"word2dict": important parameter if package "gensim" is \
         used for further process, "corpus": important parameter if package "gensim" is used for further process}}
         """
         id_tokens.columns = ['news_id', 'tokens']
