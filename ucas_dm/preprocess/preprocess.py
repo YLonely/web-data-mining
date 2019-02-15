@@ -87,9 +87,9 @@ class PreProcessor:
         id_tfvec = pd.DataFrame({'news_id': id_tokens['news_id'], 'tf_vec': news_vec})
         return {"id_tfvec": id_tfvec, "gensim_pack": {"id2word": word_dict, "corpus": corpus_tfidf}}
 
-    def extract_view_log(self):
+    def extract_logs(self):
         """
-        This method extract user view log from data and save it to a csv file.
+        This method extract user's browsing history from source data and save it to a csv file.
 
         :return: A pandas.DataFrame with 3 attributes: user_id, news_id, view_time
         """

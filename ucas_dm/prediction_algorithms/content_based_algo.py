@@ -48,10 +48,10 @@ class ContentBasedAlgo(BaseAlgo):
         manager = mp.Manager()
         res_list = manager.list()
         user_ids = self._user_log['user_id'].drop_duplicates().values.tolist()
-        part = 3
+        part = 2
         cpus = cpu_count()
         job_list = []
-        jobs = int(cpus / part)  # Use 1/3 of the cpus
+        jobs = int(cpus / part)  # Use 1/2 of the cpus
         if jobs <= 0:
             jobs = 1
         part_ids_num = int((len(user_ids) + jobs - 1) / jobs)
