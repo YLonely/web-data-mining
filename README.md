@@ -25,7 +25,7 @@ UCAS-DM(UCAS-DataMining)是一个较为简易的推荐算法库，专门为国�
 ------
 直接通过pip进行安装即可
 ```
-pip install ucas-dm==1.0.0
+pip install ucas-dm
 ```
 安装本库时会自动检查并安装(若缺少)`numpy`，`pandas`，`gensim`，`jieba`，`scikit-surprise`等库，但并不会自动检查安装`Faiss`。
 
@@ -34,10 +34,10 @@ pip install ucas-dm==1.0.0
 ### 数据预处理
 ```python
 import pandas as pd
-from ucas_dm.preprocess import Preprocessor
+from ucas_dm.preprocess import PreProcessor
 
 path_to_source_data = ".."
-pp = Preprocessor(path_to_source_data)
+pp = PreProcessor(path_to_source_data)
 news_id_and_its_content =  pp.extract_news()
 news_id_and_its_content.to_csv(path_or_buf = "./news_id_and_its_content.csv", index = False)
 
@@ -82,6 +82,7 @@ import pandas as pd
 k_list = [5, 10, 15]
 k_neighbors = 30
 user_logs = pd.read_csv("./user_logs.csv")
+eva = Evaluator(user_logs)
 cb = CollaborateBasedAlgo(user_based = True, k = k_neighbors)
 eva.evaluate(algo = cb, k = k_list, n_jobs = 2, split_date = '2014-3-21', auto_log = True)
 ```
